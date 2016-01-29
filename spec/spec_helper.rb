@@ -6,6 +6,7 @@ ActiveRecord::Migrator.migrations_paths = [File.expand_path("../../spec/dummy/db
 require 'rspec/rails'
 require 'capybara/rails'
 require 'capybara/rspec'
+require 'webmock/rspec'
 
 require 'mercurius'
 require 'mercurius/testing'

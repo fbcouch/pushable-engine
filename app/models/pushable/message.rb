@@ -1,6 +1,11 @@
 module Pushable
   class Message
     MAX_TOKENS_AT_ONCE = 999
+    attr_accessor :messenger
+
+    def initialize(messenger = Pushable::Messenger)
+      self.messenger = messenger
+    end
 
     def send_to(pushable)
       if pushable.is_a? ActiveRecord::Relation
@@ -10,13 +15,13 @@ module Pushable
         enqueue pushable.devices.android, format(:android)
         enqueue pushable.devices.ios, format(:ios)
       else
-        raise ArgumentError.new('#send_to only accepts an ActiveRecord Relation or ActiveRecord object!')
+        fail ArgumentError.new('#send_to only accepts an ActiveRecord Relation or ActiveRecord object!')
       end
     end
 
     def enqueue(devices, payload)
       devices.pluck(:id).each_slice(MAX_TOKENS_AT_ONCE) do |tokens|
-        Pushable::Messenger.perform_later tokens, payload.deep_stringify_keys
+        messenger.perform_later tokens, payload.deep_stringify_keys
       end
     end
 
@@ -41,7 +46,6 @@ module Pushable
     end
 
     private
-
       def format(platform)
         if platform == :ios
           hash = { alert: alert, badge: badge, sound: sound, other: other }
@@ -51,6 +55,5 @@ module Pushable
           { alert: alert }.merge(data: other)
         end
       end
-
   end
 end
